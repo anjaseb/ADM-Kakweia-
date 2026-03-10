@@ -1,0 +1,1 @@
+-keep class ao.kakweia.adm.** { *; }
