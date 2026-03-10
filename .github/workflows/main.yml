@@ -1,27 +1,35 @@
 name: Build ADM Kakweia APK
+
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build APK
+
+      - name: Gerar Gradle Wrapper
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.4-bin.zip -P /tmp
-          unzip -q /tmp/gradle-8.4-bin.zip -d /tmp
-          export PATH=/tmp/gradle-8.4/bin:$PATH
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
-          gradle wrapper --gradle-version=8.4
+          gradle wrapper --gradle-version=8.4 --distribution-type=bin
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace --no-daemon
+
+      - name: Aceitar licenças Android SDK
+        run: |
+          yes | sdkmanager --licenses 2>/dev/null || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || true
+
+      - name: Compilar APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
       - uses: actions/upload-artifact@v4
         with:
           name: ADM-Kakweia-APK
